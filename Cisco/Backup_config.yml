@@ -1,0 +1,12 @@
+---
+- name: backup cisco device config
+  hosts: routers
+  gather_facts: false
+  connection: network_cli
+  tasks:
+   - name: backup config
+     ios_config:
+      backup: true
+      backup_options:
+        filename: "{{ inventory_hostname}}-{{ lookup('pipe', 'date +%Y-%m-%d--%H:%M') }}.txt"
+        dir_path: /Ansible/backup_cisco_config/{{ lookup('pipe', 'date +%Y%m%d') }}
