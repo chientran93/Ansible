@@ -9,3 +9,10 @@ ansible_password=
 ansible_become=yes
 ansible_become_method=enable
 ansible_become_password=enalepass
+
+[centos]
+192.168.xx.x ansible_host_=192.168.xx.x ansible_user= ansible_password=
+
+[centos:vars]
+ansible_connection=ssh
+
