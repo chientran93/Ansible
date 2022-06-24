@@ -21,10 +21,10 @@
     register: pw
     delegate_to: localhost
   - name: hash password
-    shell: python3 -c "import crypt,getpass; print_crypt.encrypt('{{ pw.stdout }}')"
-    python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('{{ pw.stdout }}')"
-     python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
-     python -c 'import crypt,getpass;pw=getpass.getpass();print(crypt.crypt(pw) if (pw==getpass.getpass("Confirm: ")) else exit())'
+    shell: python3 -c "import crypt,getpass; print(crypt.crypt('{{ pw.stdout }}'))"
+   # python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('{{ pw.stdout }}')"
+    # python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+    # python -c 'import crypt,getpass;pw=getpass.getpass();print(crypt.crypt(pw) if (pw==getpass.getpass("Confirm: ")) else exit())'
     register: pw_hash
     delegate_to: localhost
   - name: Change {{ username }} password
