@@ -1,0 +1,42 @@
+#This playbook will set a randomly generated password for a given user. 
+#ATTENTION: Please check all variables before running this playbook.
+#All passwords will be written to a textfile (VAR: local_pw). 
+#The file will be deleted after 10 Minutes, so hurry up :-)
+---
+
+
+#Requirements: pexpect-Package has to be installed on local server
+
+- name: "Reset pw of a given user"
+  connection: ssh
+  become: yes
+  hosts: '{{ host }}'
+  vars:
+    username: root
+    #Local file were pws safed in cleartext. This file will be deleted automatically after 10 minutes
+    local_pw: /tmp/tmppw
+  tasks:
+  - name: Create a random password
+    shell: echo $(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-14})
+    register: pw
+    delegate_to: localhost
+  - name: hash password
+    shell: python3 -c "import crypt,getpass; print_crypt.encrypt('{{ pw.stdout }}')"
+    python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('{{ pw.stdout }}')"
+     python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+     python -c 'import crypt,getpass;pw=getpass.getpass();print(crypt.crypt(pw) if (pw==getpass.getpass("Confirm: ")) else exit())'
+    register: pw_hash
+    delegate_to: localhost
+  - name: Change {{ username }} password
+    user:
+      name: "{{ username }}"
+      update_password: always
+      password: "{{ pw_hash.stdout }}"
+  - name: Save password
+    shell: "echo {{ ansible_hostname }} {{ pw.stdout }} >> {{ local_pw }}"
+    delegate_to: localhost
+  - name: "Activate Auto-Deleter: {{ local_pw }} will be gone after 10 minutes"
+    shell: bash -c "sleep 600; rm -f {{ local_pw }}" &
+    delegate_to: localhost
+#    shell: "echo {{ ansible_hostname }} {{ pw.stdout }} >> {{ local_pw }}"
+#    delegate_to: localhost
